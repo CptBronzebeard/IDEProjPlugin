@@ -1,9 +1,9 @@
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiField
-import com.intellij.psi.PsiLocalVariable
-import com.intellij.psi.PsiVariable
+import com.intellij.psi.*
+import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiUtil
 import com.intellij.refactoring.RefactoringFactory
 
@@ -51,9 +51,15 @@ class Renamer(val proj: Project) {
         else true
     }
 
-    fun rename(element: PsiVariable) {
-        val el = prefix(element) + element.name!!.removePrefix(oldPrefix(element))
-        RefactoringFactory.getInstance(proj).createRename(element, el).run()
+    fun rename(element: PsiElement) {
+
+
+        val toProcess =
+                if (element is PsiReferenceExpression)
+                    (element as PsiJavaCodeReferenceElement).resolve() as PsiVariable
+                else element as PsiVariable
+        val el = prefix(toProcess) + toProcess.name!!.removePrefix(oldPrefix(toProcess))
+        RefactoringFactory.getInstance(proj).createRename(toProcess, el).run()
     }
 
     companion object {
