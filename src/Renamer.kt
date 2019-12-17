@@ -1,6 +1,4 @@
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.search.searches.ReferencesSearch
@@ -52,14 +50,14 @@ class Renamer(val proj: Project) {
     }
 
     fun rename(element: PsiElement) {
-
-
+        val list = ReferencesSearch.search(element).toList()
         val toProcess =
                 if (element is PsiReferenceExpression)
                     (element as PsiJavaCodeReferenceElement).resolve() as PsiVariable
                 else element as PsiVariable
         val el = prefix(toProcess) + toProcess.name!!.removePrefix(oldPrefix(toProcess))
-        RefactoringFactory.getInstance(proj).createRename(toProcess, el).run()
+        toProcess.setName(el)
+        list.forEach { it.handleElementRename(el) }
     }
 
     companion object {
