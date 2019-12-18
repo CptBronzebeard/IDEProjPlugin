@@ -23,22 +23,25 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
         <intentionAction>
-            <className>RenameIntention</className>
+            <className>intention_actions.RenameIntention</className>
             <category>SDK intentions</category>
         </intentionAction>
         <intentionAction>
-            <className>RestyleIntention</className>
+            <className>intention_actions.RestyleIntention</className>
             <category>SDK intentions</category>
         </intentionAction>
     </extensions>
 
     <actions>
         <!-- Add your actions here -->
-        <action id="JavaClassPrefixer" class="JavaVariablePrefixer" text="Prefix_test">
+        <action id="actions.CodestyleSettings" class="actions.CodestyleSettings" text="Codestyle Settings">
             <add-to-group group-id="RefactoringMenu" anchor="first"/>
             <keyboard-shortcut keymap="$default" first-keystroke="shift K" second-keystroke="ctrl NUMPAD7"/>
         </action>
-
+        <action id="JavaClassPrefixer" class="actions.GlobalRenamingAction" text="Rename According to Settings">
+            <add-to-group group-id="RefactoringMenu" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="shift K" second-keystroke="ctrl NUMPAD9"/>
+        </action>
     </actions>
 
 </idea-plugin>

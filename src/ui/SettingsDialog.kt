@@ -31,7 +31,7 @@ class SettingsDialog(val ts: Renamer) : DialogWrapper(true) {
     }
 
     private fun CellBuilder<JTextField>.errorOnInvalid(): CellBuilder<JTextField> {
-        return this.withErrorOnApplyIf("Wrong prefix") { it.text.contains("[\\W]".toRegex()) }
+        return this.withErrorOnApplyIf("Invalid prefix") { it.text.contains("[\\W]".toRegex()) }
     }
 
     init {

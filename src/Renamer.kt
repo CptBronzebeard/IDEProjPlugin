@@ -3,9 +3,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiUtil.isCompileTimeConstant
+import com.intellij.refactoring.RefactoringFactory
 
 class Renamer(var proj: Project) {
-    private val localPref: PropertiesComponent = PropertiesComponent.getInstance(proj)
+    private var localPref: PropertiesComponent = PropertiesComponent.getInstance(proj)
     private var prefixes =
             hashMapOf<Type, () -> String>(Type.LOCAL to { localPref.getValue(LOCAL_VAR_PREFIX, "") },
                     Type.CONST to { localPref.getValue(LOCAL_CONST_PREFIX, "") },
@@ -137,13 +138,14 @@ class Renamer(var proj: Project) {
         val prefix = getPref(element)
         val name = element.name!!.removePrefix(prefix)
         return prefix + if (name.contains(Regex("[a-z]")))
-            name.replace('-', '_').replace("[A-Z]".toRegex()) { it -> "_" + it.value.toLowerCase() } else
+            name.first().toLowerCase() + name.drop(1).replace("[A-Z]".toRegex()) { it -> "_" + it.value.toLowerCase() } else
             name.toLowerCase()
     }
 
     private fun toUpperSnake(element: PsiNamedElement): String {
         val prefix = getPref(element)
-        return prefix + (element.name!!.removePrefix(prefix).replace('-', '_').replace("[A-Z]".toRegex()) { it -> "_" + it.value.toLowerCase() }).toUpperCase()
+        val name = element.name!!.removePrefix(prefix)
+        return prefix + (name.first().toUpperCase() + name.drop(1).removePrefix(prefix).replace("[A-Z]".toRegex()) { it -> "_" + it.value.toLowerCase() }).toUpperCase()
     }
 
     private fun isCamel(element: PsiNamedElement): Boolean {
@@ -167,6 +169,19 @@ class Renamer(var proj: Project) {
         list.forEach { it.handleElementRename(newName) }
     }
 
+    fun prefixGlobal(element: PsiElement) {
+        if (!checkValidity(element)) {
+            RefactoringFactory.getInstance(element.project).createRename(element,
+                    prefix(element) + (element as PsiNamedElement).name?.removePrefix(this.prevLocal)).run()
+        }
+    }
+
+    fun restyleGlobal(element: PsiElement) {
+        if (!isStyled(element)) {
+            RefactoringFactory.getInstance(element.project).createRename(element, getRenamer()!!(element as PsiNamedElement)).run()
+        }
+    }
+
     private fun getPref(element: PsiNamedElement): String {
         return if (element.name!!.startsWith(prefix(element)))
             prefix(element)
@@ -185,6 +200,7 @@ class Renamer(var proj: Project) {
                 return instance!!
             }
             instance!!.proj = proj
+            instance!!.localPref = PropertiesComponent.getInstance(proj)
             return instance!!
         }
     }

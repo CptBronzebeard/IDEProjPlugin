@@ -1,3 +1,6 @@
+package intention_actions
+
+import Renamer
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.editor.Editor
