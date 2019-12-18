@@ -11,7 +11,8 @@ class SettingsDialog(val ts: Renamer) : DialogWrapper(true) {
     override fun createCenterPanel(): JComponent? {
         val pan = panel {
             row("Local variables prefix") { textField(ts::localPrefix) }
-            row("Constants prefix", true) { textField(ts::constPrefix) }
+            row("Constants prefix") { textField(ts::constPrefix) }
+            row("Other fields prefix", true) { textField(ts::fieldPrefix) }
             row("Word separation style: ") {
                 buttonGroup(ts::style) {
                     row { radioButton("camelCase", CAMELCASE) }

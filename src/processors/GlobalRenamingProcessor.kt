@@ -37,10 +37,11 @@ class GlobalRenamingProcessor : Processor<PsiElement> {
                 if (srv == null) {
                     srv = Renamer.getInstance(p0.project)
                 }
-                val prefix = srv!!.constPrefix
+                val prefix = if (isCompileTimeConstant(field)) srv!!.constPrefix else srv!!.fieldPrefix
+                val prevPrefix = if (isCompileTimeConstant(field)) srv!!.prevConst else srv!!.prevField
                 if (prefix.isEmpty() || !field.name.startsWith(prefix)) {
-                    if (isCompileTimeConstant(field)) RefactoringFactory.getInstance(p0.project).createRename(field,
-                            prefix + field.name.removePrefix(srv!!.prevConst)).run()
+                    RefactoringFactory.getInstance(p0.project).createRename(field,
+                            prefix + field.name.removePrefix(prevPrefix)).run()
                 }
                 if (!srv!!.isStyled(field)) {
                     RefactoringFactory.getInstance(p0.project).createRename(field, srv!!.getRenamer()!!(field)).run()

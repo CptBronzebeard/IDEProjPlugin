@@ -8,8 +8,10 @@ import com.intellij.psi.util.PsiUtil.isCompileTimeConstant
 class Renamer(val proj: Project) {
     private val localPref: PropertiesComponent = PropertiesComponent.getInstance(proj)
     private var prefixes =
-            hashMapOf<Class<out PsiElement>, () -> String>(PsiLocalVariable::class.java to { localPref.getValue("LOCAL_VAR_PREFIX", "") }, PsiField::class.java to { localPref.getValue("LOCAL_CONST_PREFIX", "") })
-    private var oldPrefixes = hashMapOf<Class<out PsiElement>, () -> String>(PsiLocalVariable::class.java to { prevLocal }, PsiField::class.java to { prevConst })
+            hashMapOf<Type, () -> String>(Type.LOCAL to { localPref.getValue("LOCAL_VAR_PREFIX", "") },
+                    Type.CONST to { localPref.getValue("LOCAL_CONST_PREFIX", "") },
+                    Type.FIELD to { localPref.getValue("LOCAL_FIELD_PREFIX", "") })
+    private var oldPrefixes = hashMapOf<Type, () -> String>(Type.LOCAL to { prevLocal }, Type.CONST to { prevConst }, Type.FIELD to { prevField })
     private val styles =
             hashMapOf<String, Style>("camelCase" to Style.CAMELCASE, "snake_case" to Style.SNAKECASE, "UPPER_SNAKE_CASE" to Style.UPPERSNAKECASE)
     private val matchers =
@@ -38,11 +40,28 @@ class Renamer(val proj: Project) {
             prevConst = localPref.getValue("LOCAL_CONST_PREFIX", "")
             localPref.setValue("LOCAL_CONST_PREFIX", value)
         }
+    var prevField: String
+        get() = localPref.getValue("LOCAL_PREV_FIELD_PREFIX", "")
+        set(value) {
+            localPref.setValue("LOCAL_PREV_FIELD_PREFIX", value)
+        }
+    var fieldPrefix: String
+        get() = localPref.getValue("LOCAL_FIELD_PREFIX", "")
+        set(value) {
+            prevField = localPref.getValue("LOCAL_FIELD_PREFIX", "")
+            localPref.setValue("LOCAL_FIELD_PREFIX", value)
+        }
 
     enum class Style(val code: String) {
         CAMELCASE("camelCase"),
         SNAKECASE("snake_case"),
         UPPERSNAKECASE("UPPER_SNAKE_CASE")
+    }
+
+    enum class Type(val code: String) {
+        LOCAL("Local"),
+        CONST("Constant"),
+        FIELD("Field")
     }
 
     var style: Style
@@ -53,16 +72,22 @@ class Renamer(val proj: Project) {
 
     private fun prefix(element: PsiElement): String {
         if (element is PsiVariable) {
-            if (element is PsiLocalVariable || isCompileTimeConstant(element)) {
-                val test = prefixes[element.javaClass.interfaces[0]]
+            if (element is PsiLocalVariable || element is PsiField) {
+                val test = prefixes[variableType(element)]
                 return test!!()
             }
         }
         return ""
     }
 
-    private fun oldPrefix(element: PsiElement): String {
-        val test = oldPrefixes[element.javaClass.interfaces[0]]
+    private fun variableType(element: PsiVariable): Type {
+        return if (element is PsiLocalVariable) Type.LOCAL
+        else if (isCompileTimeConstant(element)) Type.CONST
+        else Type.FIELD
+    }
+
+    private fun oldPrefix(element: PsiVariable): String {
+        val test = oldPrefixes[variableType(element)]
         return test!!()
     }
 
@@ -76,7 +101,7 @@ class Renamer(val proj: Project) {
                     else -> element
                 }
         if (element is PsiVariable)
-            if (element is PsiLocalVariable || PsiUtil.isCompileTimeConstant(element))
+            if (element is PsiLocalVariable || element is PsiField)
                 return element.name!!.startsWith(prefix(element))
         return true
     }
