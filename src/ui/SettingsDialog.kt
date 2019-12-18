@@ -21,7 +21,7 @@ class SettingsDialog(val ts: Renamer) : DialogWrapper(true) {
             }
 
         }
-        pan.minimumSize = Dimension(1000, 1000)
+        pan.minimumSize = Dimension(600, 300)
         return pan
     }
 
