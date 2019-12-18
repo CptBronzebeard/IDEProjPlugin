@@ -2,15 +2,17 @@ package ui
 import Renamer
 import Renamer.Style.*
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.layout.buttonGroup
 import com.intellij.ui.layout.panel
 import java.awt.Dimension
 import javax.swing.JComponent
 
 class SettingsDialog(val ts: Renamer) : DialogWrapper(true) {
+    private var lp: String = ""
     override fun createCenterPanel(): JComponent? {
         val pan = panel {
-            row("Local variables prefix") { textField(ts::localPrefix) }
+            row("Local variables prefix") { textField(ts::localPrefix).withValidationOnApply { if (it.text.contains("[\\W]")) ValidationInfo("Wrong prefix") else null } }
             row("Constants prefix") { textField(ts::constPrefix) }
             row("Other fields prefix", true) { textField(ts::fieldPrefix) }
             row("Word separation style: ") {

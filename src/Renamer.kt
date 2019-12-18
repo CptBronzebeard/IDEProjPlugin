@@ -4,7 +4,7 @@ import com.intellij.psi.*
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiUtil.isCompileTimeConstant
 
-class Renamer(val proj: Project) {
+class Renamer(var proj: Project) {
     private val localPref: PropertiesComponent = PropertiesComponent.getInstance(proj)
     private var prefixes =
             hashMapOf<Type, () -> String>(Type.LOCAL to { localPref.getValue(LOCAL_VAR_PREFIX, "") },
@@ -184,6 +184,7 @@ class Renamer(val proj: Project) {
                 instance = Renamer(proj)
                 return instance!!
             }
+            instance!!.proj = proj
             return instance!!
         }
     }
