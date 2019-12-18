@@ -149,6 +149,10 @@ class Renamer(val proj: Project) {
         else ""
     }
 
+    fun getRenamer(): ((PsiNamedElement) -> String)? {
+        return renamers[style]
+    }
+
     companion object {
         private var instance: Renamer? = null
         fun getInstance(proj: Project): Renamer {

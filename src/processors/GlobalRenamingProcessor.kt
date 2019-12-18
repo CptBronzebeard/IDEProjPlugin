@@ -22,9 +22,13 @@ class GlobalRenamingProcessor : Processor<PsiElement> {
                 if (srv == null) {
                     srv = Renamer.getInstance(p0.project)
                 }
-                if (!variable.name.startsWith(srv!!.localPrefix)) {
+                val prefix = srv!!.localPrefix
+                if (prefix.isEmpty() || !variable.name.startsWith(prefix)) {
                     RefactoringFactory.getInstance(p0.project).createRename(variable,
-                            srv!!.localPrefix + variable.name.removePrefix(srv!!.prevLocal)).run()
+                            prefix + variable.name.removePrefix(srv!!.prevLocal)).run()
+                }
+                if (!srv!!.isStyled(variable)) {
+                    RefactoringFactory.getInstance(p0.project).createRename(variable, srv!!.getRenamer()!!(variable)).run()
                 }
             }
 
@@ -33,9 +37,13 @@ class GlobalRenamingProcessor : Processor<PsiElement> {
                 if (srv == null) {
                     srv = Renamer.getInstance(p0.project)
                 }
-                if (!field.name.startsWith(srv!!.constPrefix)) {
+                val prefix = srv!!.constPrefix
+                if (prefix.isEmpty() || !field.name.startsWith(prefix)) {
                     if (isCompileTimeConstant(field)) RefactoringFactory.getInstance(p0.project).createRename(field,
-                            srv!!.constPrefix + field.name.removePrefix(srv!!.prevConst)).run()
+                            prefix + field.name.removePrefix(srv!!.prevConst)).run()
+                }
+                if (!srv!!.isStyled(field)) {
+                    RefactoringFactory.getInstance(p0.project).createRename(field, srv!!.getRenamer()!!(field)).run()
                 }
             }
         })
