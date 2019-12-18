@@ -36,11 +36,11 @@
         <!-- Add your actions here -->
         <action id="actions.CodestyleSettings" class="actions.CodestyleSettings" text="Codestyle Settings">
             <add-to-group group-id="RefactoringMenu" anchor="first"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="shift K" second-keystroke="ctrl NUMPAD7"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt 1"/>
         </action>
         <action id="JavaClassPrefixer" class="actions.GlobalRenamingAction" text="Rename According to Settings">
             <add-to-group group-id="RefactoringMenu" anchor="first"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="shift K" second-keystroke="ctrl NUMPAD9"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt 2"/>
         </action>
     </actions>
 

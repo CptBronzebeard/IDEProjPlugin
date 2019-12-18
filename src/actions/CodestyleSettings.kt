@@ -12,15 +12,6 @@ class CodestyleSettings : AnAction() {
         val project = event.getData(PlatformDataKeys.PROJECT)
         val ts = Renamer.getInstance(project!!)
         SettingsDialog(ts).showAndGet()
-        //PsiManager.getInstance(project).addPsiTreeChangeListener(TreeListener())
-        /*val processor = GlobalRenamingProcessor()
-        AllClassesGetter.processJavaClasses(
-                PlainPrefixMatcher(""),
-                project,
-                GlobalSearchScope.projectScope(project),
-                processor
-        )*/
-
     }
 
 }
