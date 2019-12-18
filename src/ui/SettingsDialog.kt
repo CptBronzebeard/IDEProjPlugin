@@ -16,7 +16,7 @@ class SettingsDialog(val ts: Renamer) : DialogWrapper(true) {
                 buttonGroup(ts::style) {
                     row { radioButton("camelCase", CAMELCASE) }
                     row { radioButton("snake_case", SNAKECASE) }
-                    row { radioButton("kebab-case", KEBABCASE) }
+                    row { radioButton("UPPER_SNAKE_CASE", UPPERSNAKECASE) }
                 }
             }
 

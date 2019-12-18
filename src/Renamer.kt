@@ -11,11 +11,11 @@ class Renamer(val proj: Project) {
             hashMapOf<Class<out PsiElement>, () -> String>(PsiLocalVariable::class.java to { localPref.getValue("LOCAL_VAR_PREFIX", "") }, PsiField::class.java to { localPref.getValue("LOCAL_CONST_PREFIX", "") })
     private var oldPrefixes = hashMapOf<Class<out PsiElement>, () -> String>(PsiLocalVariable::class.java to { prevLocal }, PsiField::class.java to { prevConst })
     private val styles =
-            hashMapOf<String, Style>("camelCase" to Style.CAMELCASE, "snake_case" to Style.SNAKECASE, "kebab-case" to Style.KEBABCASE)
+            hashMapOf<String, Style>("camelCase" to Style.CAMELCASE, "snake_case" to Style.SNAKECASE, "UPPER_SNAKE_CASE" to Style.UPPERSNAKECASE)
     private val matchers =
-            hashMapOf<Style, (PsiNamedElement) -> Boolean>(Style.CAMELCASE to ::isCamel, Style.SNAKECASE to ::isSnake, Style.KEBABCASE to ::isKebab)
+            hashMapOf<Style, (PsiNamedElement) -> Boolean>(Style.CAMELCASE to ::isCamel, Style.SNAKECASE to ::isSnake, Style.UPPERSNAKECASE to ::isUpperSnake)
     private val renamers =
-            hashMapOf<Style, (PsiNamedElement) -> String>(Style.CAMELCASE to ::toCamel, Style.SNAKECASE to ::toSnake, Style.KEBABCASE to ::toKebab)
+            hashMapOf<Style, (PsiNamedElement) -> String>(Style.CAMELCASE to ::toCamel, Style.SNAKECASE to ::toSnake, Style.UPPERSNAKECASE to ::toUpperSnake)
     var prevLocal: String
         get() = localPref.getValue("LOCAL_VAR_CONST_PREFIX", "")
         set(value) {
@@ -42,7 +42,7 @@ class Renamer(val proj: Project) {
     enum class Style(val code: String) {
         CAMELCASE("camelCase"),
         SNAKECASE("snake_case"),
-        KEBABCASE("kebab-case")
+        UPPERSNAKECASE("UPPER_SNAKE_CASE")
     }
 
     var style: Style
@@ -103,17 +103,23 @@ class Renamer(val proj: Project) {
 
     private fun toCamel(element: PsiNamedElement): String {
         val prefix = getPref(element)
-        return prefix + element.name!!.removePrefix(prefix).replace("_+[a-zA-Z]".toRegex()) { it -> it.value.replace("_", "").capitalize() }
+        val name = element.name!!.removePrefix(prefix)
+        return prefix + if (name.contains(Regex("[a-z]")))
+            name.replace("_+[a-zA-Z]".toRegex()) { it -> it.value.replace("_", "").capitalize() } else
+            name.toLowerCase().replace("_+[a-z]".toRegex()) {it.value.replace("_", "").capitalize()}
     }
 
     private fun toSnake(element: PsiNamedElement): String {
         val prefix = getPref(element)
-        return prefix + element.name!!.removePrefix(prefix).replace('-', '_').replace("[A-Z]".toRegex()) { it -> "_" + it.value.toLowerCase() }
+        val name = element.name!!.removePrefix(prefix)
+        return prefix + if (name.contains(Regex("[a-z]")))
+            name.replace('-', '_').replace("[A-Z]".toRegex()) { it -> "_" + it.value.toLowerCase() } else
+            name.toLowerCase()
     }
 
-    private fun toKebab(element: PsiNamedElement): String {
+    private fun toUpperSnake(element: PsiNamedElement): String {
         val prefix = getPref(element)
-        return prefix + element.name!!.removePrefix(prefix).replace('_', '-').replace("[A-Z]".toRegex()) { it -> "_" + it.value.toLowerCase() }
+        return prefix + (element.name!!.removePrefix(prefix).replace('-', '_').replace("[A-Z]".toRegex()) { it -> "_" + it.value.toLowerCase() }).toUpperCase()
     }
 
     private fun isCamel(element: PsiNamedElement): Boolean {
@@ -126,9 +132,9 @@ class Renamer(val proj: Project) {
         return !(name.contains(Regex("[A-Z]")) || name.contains('-'))
     }
 
-    private fun isKebab(element: PsiNamedElement): Boolean {
+    private fun isUpperSnake(element: PsiNamedElement): Boolean {
         val name = element.name!!.removePrefix(prefix(element))
-        return !(name.contains(Regex("[A-Z]")) || name.contains('_'))
+        return !(name.contains(Regex("[a-z]")) || name.contains('-'))
     }
 
     private fun renameEl(element: PsiNamedElement, newName: String) {
