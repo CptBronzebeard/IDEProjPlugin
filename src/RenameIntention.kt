@@ -9,12 +9,15 @@ class RenameIntention : PsiElementBaseIntentionAction(), IntentionAction {
         return "Prefix variable"
     }
 
-    override fun getText(): String = "Normalize elements' name"
+    var msg: String = "Add prefix"
+
+    override fun getText(): String = msg
     var srv: Renamer? = null
     override fun isAvailable(project: Project, p1: Editor?, element: PsiElement): Boolean {
         if (srv == null) {
             srv = Renamer.getInstance(project)
         }
+        msg = "Add \"" + srv!!.prefix(element.parent) + "\" prefix"
         return !srv!!.checkValidity(element.parent)
     }
 

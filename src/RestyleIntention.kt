@@ -10,12 +10,15 @@ class RestyleIntention : PsiElementBaseIntentionAction(), IntentionAction {
         return "Restyle variable"
     }
 
-    override fun getText(): String = "Restyle elements name"
+    var msg: String = "Change element name style"
+
+    override fun getText(): String = msg
     var srv: Renamer? = null
     override fun isAvailable(project: Project, p1: Editor?, element: PsiElement): Boolean {
         if (srv == null) {
             srv = Renamer.getInstance(project)
         }
+        msg = "Convert to " + srv!!.style.code
         return !srv!!.isStyled(element.parent)
     }
 
