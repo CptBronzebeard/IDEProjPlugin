@@ -13,7 +13,6 @@ class GlobalRenamingAction : AnAction() {
         val project = event.getData(PlatformDataKeys.PROJECT)
         if (project != null) {
             val processor = GlobalRenamingProcessor()
-            //batchGroupBy.start()
             AllClassesGetter.processJavaClasses(
                     PlainPrefixMatcher(""),
                     project,
